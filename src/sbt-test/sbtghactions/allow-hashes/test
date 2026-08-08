@@ -1,1 +1,7 @@
 > githubWorkflowCheck
+$ copy-file .github/workflows/ci.yml .github/workflows/ci-ok.yml
+$ copy-file .github/workflows/ci-modified.yml .github/workflows/ci.yml
+> githubWorkflowUpdate
+# The update should overwrite the modifications but keep the
+# by-hash references to actions intact
+$ must-mirror .github/workflows/ci.yml .github/workflows/ci-ok.yml
