@@ -921,6 +921,7 @@ ${indent(jobs.map(compileJob(_, sbt)).mkString("\n\n"), 1)}
     },
 
     githubWorkflowGenerate / aggregate := false,
+    githubWorkflowUpdate / aggregate := false,
     githubWorkflowCheck / aggregate := false,
 
     githubWorkflowGenerate := {
@@ -935,6 +936,32 @@ ${indent(jobs.map(compileJob(_, sbt)).mkString("\n\n"), 1)}
 
       if(includeClean)
         IO.write(cleanYml, cleanContents)
+    },
+
+    githubWorkflowUpdate := {
+      val ciContents = generateCiContents.value
+      val includeClean = githubWorkflowIncludeClean.value
+      val cleanContents = generateCleanContents(githubWorkflowOSes.value.head)
+
+      val ciYml = ciYmlFile.value
+      val cleanYml = cleanYmlFile.value
+
+      def updateAndWrite(yml: File, contents: String) = {
+        val existingContents = IO.read(yml)
+        val hashRefPattern = "uses: ([-a-zA-Z0-9]+/[-a-zA-Z0-9]+)@([a-z0-9]{40}.*)".r
+        val existingHashes = hashRefPattern.findAllMatchIn(existingContents)
+        val updatedContents = existingHashes.foldLeft(contents)((acc, action) =>
+            acc.replaceAll(
+              s"uses: ${action.group(1)}@.*",
+              s"uses: ${action.group(1)}@${action.group(2)}"
+            )
+          )
+        IO.write(yml, updatedContents)
+      }
+
+      updateAndWrite(ciYml, ciContents)
+      if(includeClean)
+        updateAndWrite(cleanYml, cleanContents)
     },
 
     githubWorkflowCheck := {

@@ -5,6 +5,9 @@
 # change your sbt build configuration to revise the workflow description
 # to meet your needs, then regenerate this file.
 
+# This file was changed, to test that githubWorkflowUpdate will overwrite
+# all such changes *except* references to actions by hash.
+
 name: Continuous Integration
 
 on:
